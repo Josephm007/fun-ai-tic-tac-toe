@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence, stagger, useAnimate } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import EnhancedGameCell from "./EnhancedGameCell";
@@ -10,7 +11,7 @@ import FinalResults from "./FinalResults";
 import { getAIMove, checkWin, isDraw, hasWinner, isGameOver } from "@/utils/aiLogic";
 import { enhancedSoundService } from "@/services/enhancedSoundService";
 import { settingsService, type GameSettings, type GameStats, type RoundStats } from "@/services/settingsService";
-import { showInterstitialAd } from "@/services/admob";
+import { initAdMob, showInterstitialAd } from "@/services/admob";
 
 export type Player = 'X' | 'O' | '';
 export type Board = Player[];
@@ -91,10 +92,18 @@ const TicTacToeGame = () => {
   const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
+    initAdMob();
     loadSettings();
     loadStats();
     loadRounds();
   }, []);
+
+  // Show interstitial ad every 2 rounds
+  useEffect(() => {
+    if (settings.matchType === 'best-of-7' && gameState.currentRound > 1 && gameState.currentRound % 2 === 0) {
+      showInterstitialAd();
+    }
+  }, [gameState.currentRound, settings.matchType]);
 
   useEffect(() => {
     enhancedSoundService.setEnabled(settings.soundEnabled);
@@ -479,7 +488,12 @@ const TicTacToeGame = () => {
 
       {/* Top Player Bar - Only show for best-of-7 matches */}
       {settings.matchType === 'best-of-7' && (
-        <Card className="p-4 w-full bg-gradient-to-r from-blue-50 via-gray-50 to-red-50 dark:from-blue-900/20 dark:via-gray-800 dark:to-red-900/20">
+        <motion.div
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <Card className="p-4 w-full bg-gradient-to-r from-blue-50 via-gray-50 to-red-50 dark:from-blue-900/20 dark:via-gray-800 dark:to-red-900/20">
           <div className="flex items-center justify-between">
             {/* Player 1 (X) */}
             <div className="flex items-center space-x-3 flex-1">
@@ -492,9 +506,15 @@ const TicTacToeGame = () => {
                 <div className="font-semibold text-blue-600 dark:text-blue-400 text-sm">
                   {getPlayerName('X')}
                 </div>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <motion.div 
+                  className="text-2xl font-bold text-blue-600 dark:text-blue-400"
+                  key={gameState.stats.xWins}
+                  initial={{ scale: 1.2, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   {gameState.stats.xWins}
-                </div>
+                </motion.div>
               </div>
             </div>
 
@@ -517,9 +537,15 @@ const TicTacToeGame = () => {
                 <div className="font-semibold text-red-600 dark:text-red-400 text-sm">
                   {getPlayerName('O')}
                 </div>
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                <motion.div 
+                  className="text-2xl font-bold text-red-600 dark:text-red-400"
+                  key={gameState.stats.oWins}
+                  initial={{ scale: 1.2, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   {gameState.stats.oWins}
-                </div>
+                </motion.div>
               </div>
               <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
                 <span className="text-xl font-bold text-red-600 dark:text-red-400">
@@ -528,7 +554,8 @@ const TicTacToeGame = () => {
               </div>
             </div>
           </div>
-        </Card>
+          </Card>
+        </motion.div>
       )}
 
       <Card className="p-6 w-full shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
@@ -563,10 +590,22 @@ const TicTacToeGame = () => {
           
           {/* Game Board */}
           <div className="relative">
-            <div className="grid grid-cols-3 gap-2 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <motion.div 
+              className="grid grid-cols-3 gap-2 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg"
+              key={`board-${gameState.currentRound}`}
+            >
               {board.map((cell, index) => (
+                <motion.div
+                  key={`cell-${gameState.currentRound}-${index}`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ 
+                    duration: 0.3, 
+                    delay: index * 0.05,
+                    ease: "easeOut"
+                  }}
+                >
                 <EnhancedGameCell
-                  key={index}
                   value={cell}
                   onClick={() => handleCellClick(index)}
                   isWinning={winningCondition?.includes(index) || false}
@@ -574,8 +613,9 @@ const TicTacToeGame = () => {
                   iconStyle={settings.iconStyle}
                   currentPlayer={currentPlayer}
                 />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
           
           <div className="flex space-x-2">
