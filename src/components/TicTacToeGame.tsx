@@ -644,9 +644,9 @@ const TicTacToeGame = () => {
       {/* Game Result Popup */}
       <GamePopup
         show={showPopup}
-        message={gameResult}
+        message={gameResult ?? ''}
         onClose={() => setShowPopup(false)}
-        autoCloseDelay={gameResult.includes("draw") ? 1500 : 3000}
+        autoCloseDelay={(gameResult ?? '').includes("draw") ? 1500 : 3000}
       />
 
       {/* Settings Modal */}

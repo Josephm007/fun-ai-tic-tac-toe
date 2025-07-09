@@ -10,21 +10,23 @@ interface GamePopupProps {
 }
 
 const GamePopup = ({ show, message, onClose, autoCloseDelay = 3000 }: GamePopupProps) => {
+  const safeMessage = message ?? '';
+  
   useEffect(() => {
     if (show) {
       // Auto-close after specified delay (1.5 seconds for draws, 3 seconds for others)
-      const delay = message.includes("draw") ? 1500 : autoCloseDelay;
+      const delay = safeMessage.includes("draw") ? 1500 : autoCloseDelay;
       const timer = setTimeout(() => {
         onClose();
       }, delay);
       return () => clearTimeout(timer);
     }
-  }, [show, onClose, message, autoCloseDelay]);
+  }, [show, onClose, safeMessage, autoCloseDelay]);
 
   if (!show) return null;
 
-  const isDraw = message.includes("draw");
-  const isSeriesComplete = message.includes("series") || message.includes("match");
+  const isDraw = safeMessage.includes("draw");
+  const isSeriesComplete = safeMessage.includes("series") || safeMessage.includes("match");
 
   return (
     <AnimatePresence>
@@ -64,8 +66,8 @@ const GamePopup = ({ show, message, onClose, autoCloseDelay = 3000 }: GamePopupP
             animate={{ scale: 1 }}
             transition={{ delay: 0.1, duration: 0.3 }}
           >
-            {message}
-          </div>
+            {safeMessage}
+          </motion.div>
           
           {/* Show different styling for draw messages */}
           {isDraw && (
