@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import { GameStats } from "@/services/settingsService";
 
 interface GameStatsProps {
@@ -76,25 +77,43 @@ const GameStatsComponent = ({
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  <motion.div 
+                    className="text-2xl font-bold text-blue-600 dark:text-blue-400"
+                    key={gameState.stats.xWins}
+                    initial={{ scale: 1.2, opacity: 0.7 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     {gameState.stats.xWins}
-                  </div>
+                  </motion.div>
                   <div className="text-sm text-blue-600 dark:text-blue-400">
                     {getPlayerName('x')}
                   </div>
                 </div>
                 
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
+                  <motion.div 
+                    className="text-2xl font-bold text-gray-600 dark:text-gray-400"
+                    key={gameState.stats.draws}
+                    initial={{ scale: 1.2, opacity: 0.7 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     {gameState.stats.draws}
-                  </div>
+                  </motion.div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Draws</div>
                 </div>
                 
                 <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  <motion.div 
+                    className="text-2xl font-bold text-red-600 dark:text-red-400"
+                    key={gameState.stats.oWins}
+                    initial={{ scale: 1.2, opacity: 0.7 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     {gameState.stats.oWins}
-                  </div>
+                  </motion.div>
                   <div className="text-sm text-red-600 dark:text-red-400">
                     {getPlayerName('o')}
                   </div>
@@ -133,21 +152,45 @@ const GameStatsComponent = ({
                   <span className="text-blue-600 dark:text-blue-400 font-bold">X</span>
                   <span className="text-gray-700 dark:text-gray-300">Wins</span>
                 </div>
-                <span className="font-bold text-blue-600 dark:text-blue-400">{stats.xWins}</span>
+                <motion.span 
+                  className="font-bold text-blue-600 dark:text-blue-400"
+                  key={stats.xWins}
+                  initial={{ scale: 1.2, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {stats.xWins}
+                </motion.span>
               </div>
               <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <span className="text-red-600 dark:text-red-400 font-bold">O</span>
                   <span className="text-gray-700 dark:text-gray-300">Wins</span>
                 </div>
-                <span className="font-bold text-red-600 dark:text-red-400">{stats.oWins}</span>
+                <motion.span 
+                  className="font-bold text-red-600 dark:text-red-400"
+                  key={stats.oWins}
+                  initial={{ scale: 1.2, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {stats.oWins}
+                </motion.span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <span className="text-gray-600 dark:text-gray-400 font-bold">—</span>
                   <span className="text-gray-700 dark:text-gray-300">Draws</span>
                 </div>
-                <span className="font-bold text-gray-600 dark:text-gray-400">{stats.draws}</span>
+                <motion.span 
+                  className="font-bold text-gray-600 dark:text-gray-400"
+                  key={stats.draws}
+                  initial={{ scale: 1.2, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {stats.draws}
+                </motion.span>
               </div>
             </div>
           </div>
