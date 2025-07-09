@@ -3,7 +3,7 @@ import { AdMob, BannerAdSize, BannerAdPosition, InterstitialAdPluginEvents } fro
 
 const useTestAds = import.meta.env.VITE_USE_TEST_ADS === "true";
 
-const bannerAdId = TEST_MODE
+const bannerAdId = useTestAds
   ? 'ca-app-pub-3940256099942544/6300978111' // ✅ Google Test Banner
   : 'ca-app-pub-6695870861385987/2126913341'; // 🎯 My Real Banner Ad ID
 
@@ -46,8 +46,8 @@ export async function preloadAd() {
 export async function initializeAdMob() {
   try {
     await AdMob.initialize({
-      initializeForTesting: TEST_MODE,
-      testingDevices: TEST_MODE ? ['ABCDEF123456'] : [],
+      initializeForTesting: useTestAds,
+      testingDevices: useTestAds ? ['ABCDEF123456'] : [],
     });
     console.log('AdMob initialized successfully');
   } catch (error) {
@@ -62,7 +62,7 @@ export async function showBannerAd() {
       adSize: BannerAdSize.BANNER,
       position: BannerAdPosition.BOTTOM_CENTER,
       margin: 0,
-      isTesting: TEST_MODE,
+      isTesting: useTestAds,
     });
     console.log('Banner ad shown');
   } catch (error) {
