@@ -165,7 +165,7 @@ const TicTacToeGame = () => {
     setHasGameOutcome(false);
     setShowPopup(false);
     setGameResult('');
-    setCurrentPlayer('X');
+    setCurrentPlayer('X'); // ✅ Always start with X
   };
 
   const resetGame = () => {
@@ -192,9 +192,25 @@ const TicTacToeGame = () => {
   };
 
   const handleCellClick = (index: number) => {
-    if (board[index] !== '' || !gameActive) return;
+    // ✅ FIXED: Strict validation to prevent double moves and out-of-turn plays
+    if (board[index] !== '' || !gameActive || hasGameOutcome) {
+      console.log('Invalid move attempt:', { 
+        cellFilled: board[index] !== '', 
+        gameActive, 
+        hasGameOutcome,
+        currentPlayer 
+      });
+      return;
+    }
 
-    // In two-player mode, allow both players to move
+    // ✅ FIXED: In single-player mode, only allow human (X) moves during X's turn
+    // In two-player mode, allow moves for the current player
+    if (settings.gameMode === 'single-player' && currentPlayer !== 'X') {
+      console.log('Not player X turn in single-player mode');
+      return;
+    }
+
+    // ✅ Process the valid move
     if (settings.gameMode === 'two-player' || currentPlayer === 'X') {
       enhancedSoundService.playTap();
 
@@ -202,7 +218,7 @@ const TicTacToeGame = () => {
       newBoard[index] = currentPlayer;
       setBoard(newBoard);
 
-      // Check for win condition first
+      // ✅ Check for win condition first
       const winCondition = checkWin(newBoard, currentPlayer);
       if (winCondition) {
         setWinningCondition(winCondition);
@@ -215,7 +231,7 @@ const TicTacToeGame = () => {
         return;
       }
 
-      // Enhanced draw detection using the new isDraw function
+      // ✅ Enhanced draw detection using the new isDraw function
       if (isDraw(newBoard)) {
         setGameActive(false);
         setHasGameOutcome(true);
@@ -224,11 +240,12 @@ const TicTacToeGame = () => {
         return;
       }
 
+      // ✅ FIXED: Switch to next player ONLY after valid move
       const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
       setCurrentPlayer(nextPlayer);
       enhancedSoundService.playMove();
 
-      // In single-player mode, trigger AI move
+      // ✅ FIXED: In single-player mode, trigger AI move with delay
       if (settings.gameMode === 'single-player' && nextPlayer === 'O') {
         setTimeout(() => makeAIMove(newBoard), 800);
       }
@@ -236,7 +253,11 @@ const TicTacToeGame = () => {
   };
 
   const makeAIMove = (currentBoard: Board) => {
-    if (!gameActive || settings.gameMode !== 'single-player') return;
+    // ✅ FIXED: Additional validation for AI moves
+    if (!gameActive || settings.gameMode !== 'single-player' || hasGameOutcome || currentPlayer !== 'O') {
+      console.log('Invalid AI move attempt:', { gameActive, gameMode: settings.gameMode, hasGameOutcome, currentPlayer });
+      return;
+    }
 
     const move = getAIMove(currentBoard, settings.aiDifficulty);
     
@@ -245,7 +266,7 @@ const TicTacToeGame = () => {
       newBoard[move] = 'O';
       setBoard(newBoard);
 
-      // Check for AI win
+      // ✅ Check for AI win
       const winCondition = checkWin(newBoard, 'O');
       if (winCondition) {
         setWinningCondition(winCondition);
@@ -256,7 +277,7 @@ const TicTacToeGame = () => {
         return;
       }
 
-      // Enhanced draw detection for AI moves
+      // ✅ Enhanced draw detection for AI moves
       if (isDraw(newBoard)) {
         setGameActive(false);
         setHasGameOutcome(true);
@@ -265,6 +286,7 @@ const TicTacToeGame = () => {
         return;
       }
 
+      // ✅ FIXED: Switch back to player X after AI move
       setCurrentPlayer('X');
     }
   };
@@ -345,7 +367,7 @@ const TicTacToeGame = () => {
     console.log('Starting new game, showing interstitial ad...');
     await showInterstitialAd();
     
-    // Reset everything completely
+    // ✅ Reset everything completely
     await settingsService.resetRounds();
     const newRounds = await settingsService.getRounds();
     setRounds(newRounds);
@@ -354,7 +376,7 @@ const TicTacToeGame = () => {
     setShowFinalResults(false);
     setShowStartMenu(true);
     
-    // Reset game state
+    // ✅ Reset game state
     setGameState({
       totalRounds: 7,
       currentRound: 1,
