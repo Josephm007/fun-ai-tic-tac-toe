@@ -11,7 +11,7 @@ import FinalResults from "./FinalResults";
 import { getAIMove, checkWin, isDraw, hasWinner, isGameOver } from "@/utils/aiLogic";
 import { enhancedSoundService } from "@/services/enhancedSoundService";
 import { settingsService, type GameSettings, type GameStats, type RoundStats } from "@/services/settingsService";
-import { initAdMob, showInterstitialAd } from "@/services/admob";
+import { initializeAdMob, showBannerAd, showInterstitialAd } from "@/services/admob";
 
 export type Player = 'X' | 'O' | '';
 export type Board = Player[];
@@ -92,7 +92,8 @@ const TicTacToeGame = () => {
   const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
-    initAdMob();
+    initializeAdMob();
+    showBannerAd();
     loadSettings();
     loadStats();
     loadRounds();
@@ -194,49 +195,56 @@ const TicTacToeGame = () => {
   const handleCellClick = (index: number) => {
     if (board[index] !== '' || !gameActive) return;
 
-    // In two-player mode, allow both players to move
-    if (settings.gameMode === 'two-player' || currentPlayer === 'X') {
-      enhancedSoundService.playTap();
+    // ✅ FIXED: Proper turn validation
+    // In single-player mode: Only allow human (X) moves when it's X's turn
+    // In two-player mode: Allow moves for current player only
+    const canMove = settings.gameMode === 'two-player' || 
+                   (settings.gameMode === 'single-player' && currentPlayer === 'X');
+    
+    if (!canMove) return;
 
-      const newBoard = [...board];
-      newBoard[index] = currentPlayer;
-      setBoard(newBoard);
+    enhancedSoundService.playTap();
 
-      // Check for win condition first
-      const winCondition = checkWin(newBoard, currentPlayer);
-      if (winCondition) {
-        setWinningCondition(winCondition);
-        setGameActive(false);
-        setHasGameOutcome(true);
-        enhancedSoundService.playWin();
-        
-        const winnerName = getPlayerName(currentPlayer);
-        setTimeout(() => endRound(`${winnerName} wins this round! 🎉`, currentPlayer as 'X' | 'O'), 600);
-        return;
-      }
+    const newBoard = [...board];
+    newBoard[index] = currentPlayer;
+    setBoard(newBoard);
 
-      // Enhanced draw detection using the new isDraw function
-      if (isDraw(newBoard)) {
-        setGameActive(false);
-        setHasGameOutcome(true);
-        enhancedSoundService.playDraw();
-        setTimeout(() => endRound("It's a draw! 🤝", 'draw'), 600);
-        return;
-      }
+    // Check for win condition first
+    const winCondition = checkWin(newBoard, currentPlayer);
+    if (winCondition) {
+      setWinningCondition(winCondition);
+      setGameActive(false);
+      setHasGameOutcome(true);
+      enhancedSoundService.playWin();
+      
+      const winnerName = getPlayerName(currentPlayer);
+      setTimeout(() => endRound(`${winnerName} wins this round! 🎉`, currentPlayer as 'X' | 'O'), 600);
+      return;
+    }
 
-      const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      setCurrentPlayer(nextPlayer);
-      enhancedSoundService.playMove();
+    // Enhanced draw detection using the new isDraw function
+    if (isDraw(newBoard)) {
+      setGameActive(false);
+      setHasGameOutcome(true);
+      enhancedSoundService.playDraw();
+      setTimeout(() => endRound("It's a draw! 🤝", 'draw'), 600);
+      return;
+    }
 
-      // In single-player mode, trigger AI move
-      if (settings.gameMode === 'single-player' && nextPlayer === 'O') {
-        setTimeout(() => makeAIMove(newBoard), 800);
-      }
+    // ✅ FIXED: Always switch turns after a valid move
+    const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    setCurrentPlayer(nextPlayer);
+    enhancedSoundService.playMove();
+
+    // In single-player mode, trigger AI move after human move
+    if (settings.gameMode === 'single-player' && nextPlayer === 'O') {
+      setTimeout(() => makeAIMove(newBoard), 800);
     }
   };
 
   const makeAIMove = (currentBoard: Board) => {
-    if (!gameActive || settings.gameMode !== 'single-player') return;
+    // ✅ FIXED: Additional validation for AI moves
+    if (!gameActive || settings.gameMode !== 'single-player' || currentPlayer !== 'O') return;
 
     const move = getAIMove(currentBoard, settings.aiDifficulty);
     
@@ -265,6 +273,7 @@ const TicTacToeGame = () => {
         return;
       }
 
+      // ✅ FIXED: Switch back to human player after AI move
       setCurrentPlayer('X');
     }
   };
@@ -342,6 +351,9 @@ const TicTacToeGame = () => {
   };
 
   const newGame = async () => {
+    console.log('Starting new game, showing interstitial ad...');
+    await showInterstitialAd();
+    
     console.log('Starting new game, showing interstitial ad...');
     await showInterstitialAd();
     
@@ -609,7 +621,8 @@ const TicTacToeGame = () => {
                   value={cell}
                   onClick={() => handleCellClick(index)}
                   isWinning={winningCondition?.includes(index) || false}
-                  disabled={!gameActive || cell !== ''}
+                  disabled={!gameActive || cell !== '' || 
+                    (settings.gameMode === 'single-player' && currentPlayer === 'O')}
                   iconStyle={settings.iconStyle}
                   currentPlayer={currentPlayer}
                 />

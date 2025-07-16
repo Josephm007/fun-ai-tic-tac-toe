@@ -1,4 +1,3 @@
-
 import { AdMob, BannerAdSize, BannerAdPosition, InterstitialAdPluginEvents } from '@capacitor-community/admob';
 
 const useTestAds = import.meta.env.VITE_USE_TEST_ADS === "true";
