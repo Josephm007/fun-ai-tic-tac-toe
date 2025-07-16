@@ -6,12 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   plugins: {
     AdMob: {
-      appId: 'ca-app-pub-6695870861385987~1528432953', // ✅ Your real App ID
-      isTesting: true, // ✅ Set to false for production
-      initializeForTesting: true, // ✅ Set to false for production
+      appId: 'ca-app-pub-6695870861385987~1528432953',
+      isTesting: true,
+      initializeForTesting: true,
       tagForChildDirectedTreatment: false,
       tagForUnderAgeOfConsent: false,
-      maxAdContentRating: 'G', // ✅ Family-friendly content rating
+      maxAdContentRating: 'G',
     }
   },
 };
