@@ -1,4 +1,3 @@
-
 import { AdMob, BannerAdSize, BannerAdPosition, InterstitialAdPluginEvents } from '@capacitor-community/admob';
 
 const useTestAds = import.meta.env.VITE_USE_TEST_ADS === "true";
@@ -43,43 +42,6 @@ export async function preloadAd() {
   }
 }
 
-export async function initAdMob() {
-  try {
-    await AdMob.initialize({
-      initializeForTesting: useTestAds,
-      testingDevices: useTestAds ? ['ABCDEF123456'] : [],
-    });
-    console.log('AdMob initialized successfully');
-    await preloadAd();
-  } catch (error) {
-    console.error('AdMob initialization failed:', error);
-  }
-}
-
-export async function preloadAd() {
-  try {
-    await AdMob.prepareInterstitial({
-      adId: INTERSTITIAL_AD_ID,
-      isTesting: useTestAds,
-    });
-    console.log('Interstitial ad preloaded');
-  } catch (error) {
-    console.error('Failed to preload interstitial ad:', error);
-  }
-}
-
-export async function initializeAdMob() {
-  try {
-    await AdMob.initialize({
-      initializeForTesting: useTestAds,
-      testingDevices: useTestAds ? ['ABCDEF123456'] : [],
-    });
-    console.log('AdMob initialized successfully');
-  } catch (error) {
-    console.error('AdMob initialization failed:', error);
-  }
-}
-
 export async function showBannerAd() {
   try {
     await AdMob.showBanner({
@@ -99,8 +61,6 @@ export async function showInterstitialAd() {
   try {
     await AdMob.showInterstitial();
     console.log('Interstitial ad shown');
-    // Preload next ad
-    await preloadAd();
     // Preload next ad
     await preloadAd();
   } catch (error) {
