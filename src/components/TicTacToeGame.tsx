@@ -179,6 +179,16 @@ const TicTacToeGame = () => {
     setCurrentPlayer(firstPlayerThisRound);
   };
 
+  // Effect to trigger AI move when AI should start the round
+  useEffect(() => {
+    if (settings.gameMode === 'single-player' && 
+        currentPlayer === 'O' && 
+        gameActive && 
+        board.every(cell => cell === '')) {
+      // AI should make the first move
+      setTimeout(() => makeAIMove(board), 800);
+    }
+  }, [currentPlayer, gameActive, settings.gameMode, board]);
   const resetGame = () => {
     resetBoard();
     setFirstPlayerThisRound('X'); // Reset to X starting first for new games
