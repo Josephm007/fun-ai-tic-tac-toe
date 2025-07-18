@@ -42,6 +42,9 @@ const TicTacToeGame = () => {
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [hasGameOutcome, setHasGameOutcome] = useState(false);
   
+  // 🌀 TURN SYSTEM - Track who goes first each round
+  const [firstPlayerThisRound, setFirstPlayerThisRound] = useState<'X' | 'O'>('X');
+  
   // Enhanced game state for best-of-X series
   const [gameState, setGameState] = useState<GameState>({
     totalRounds: 7,
@@ -98,10 +101,16 @@ const TicTacToeGame = () => {
     loadRounds();
   }, []);
 
-  // Show interstitial ad every 2 rounds
+  // 📢 INTERSTITIAL ADS - Show after every 2 rounds
   useEffect(() => {
-    if (settings.matchType === 'best-of-7' && gameState.currentRound > 1 && gameState.currentRound % 2 === 0) {
-      showInterstitialAd();
+    if (settings.matchType === 'best-of-7' && gameState.currentRound > 1) {
+      const roundIndex = gameState.currentRound - 1; // Convert to 0-based index
+      if (roundIndex % 2 === 0) {
+        console.log(`Showing interstitial ad after round ${roundIndex + 1}`);
+        showInterstitialAd().catch(error => {
+          console.warn('Failed to show interstitial ad (offline mode?):', error);
+        });
+      }
     }
   }, [gameState.currentRound, settings.matchType]);
 
@@ -165,11 +174,14 @@ const TicTacToeGame = () => {
     setHasGameOutcome(false);
     setShowPopup(false);
     setGameResult('');
-    setCurrentPlayer('X');
+    
+    // 🌀 Set starting player based on turn system
+    setCurrentPlayer(firstPlayerThisRound);
   };
 
   const resetGame = () => {
     resetBoard();
+    setFirstPlayerThisRound('X'); // Reset to X starting first for new games
     if (settings.matchType === 'best-of-7') {
       setGameState(prev => ({
         ...prev,
@@ -270,6 +282,16 @@ const TicTacToeGame = () => {
   };
 
   const endRound = async (message: string, winner: 'X' | 'O' | 'draw') => {
+    // 🌀 TURN SYSTEM - Determine who goes first next round
+    if (winner === 'X') {
+      setFirstPlayerThisRound('X'); // Winner goes first
+    } else if (winner === 'O') {
+      setFirstPlayerThisRound('O'); // Winner goes first
+    } else {
+      // Draw - swap who goes first
+      setFirstPlayerThisRound(prev => prev === 'X' ? 'O' : 'X');
+    }
+    
     if (settings.matchType === 'best-of-7') {
       // Update game state stats
       const newStats = { ...gameState.stats };
@@ -342,14 +364,21 @@ const TicTacToeGame = () => {
   };
 
   const newGame = async () => {
-    console.log('Starting new game, showing interstitial ad...');
-    await showInterstitialAd();
+    console.log('Starting new game...');
+    
+    // Show interstitial ad when starting a completely new game
+    try {
+      await showInterstitialAd();
+    } catch (error) {
+      console.warn('Failed to show interstitial ad on new game (offline mode?):', error);
+    }
     
     // Reset everything completely
     await settingsService.resetRounds();
     const newRounds = await settingsService.getRounds();
     setRounds(newRounds);
     
+    setFirstPlayerThisRound('X'); // Reset turn system
     resetBoard();
     setShowFinalResults(false);
     setShowStartMenu(true);

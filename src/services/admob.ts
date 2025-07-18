@@ -43,6 +43,31 @@ export async function preloadAd() {
   }
 }
 
+export async function initAdMob() {
+  try {
+    await AdMob.initialize({
+      initializeForTesting: useTestAds,
+      testingDevices: useTestAds ? ['ABCDEF123456'] : [],
+    });
+    console.log('AdMob initialized successfully');
+    await preloadAd();
+  } catch (error) {
+    console.error('AdMob initialization failed:', error);
+  }
+}
+
+export async function preloadAd() {
+  try {
+    await AdMob.prepareInterstitial({
+      adId: INTERSTITIAL_AD_ID,
+      isTesting: useTestAds,
+    });
+    console.log('Interstitial ad preloaded');
+  } catch (error) {
+    console.error('Failed to preload interstitial ad:', error);
+  }
+}
+
 export async function initializeAdMob() {
   try {
     await AdMob.initialize({
@@ -74,6 +99,8 @@ export async function showInterstitialAd() {
   try {
     await AdMob.showInterstitial();
     console.log('Interstitial ad shown');
+    // Preload next ad
+    await preloadAd();
     // Preload next ad
     await preloadAd();
   } catch (error) {
