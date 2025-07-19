@@ -94,6 +94,18 @@ const TicTacToeGame = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showStats, setShowStats] = useState(false);
 
+  // Auto-trigger AI move when it's AI's turn to start
+  useEffect(() => {
+    if (settings.gameMode === 'single-player' && 
+        currentPlayer === 'O' && 
+        gameActive && 
+        board.every(cell => cell === '')) {
+      // AI should make the first move
+      const timer = setTimeout(() => makeAIMove(board), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPlayer, gameActive, settings.gameMode, board]);
+
   useEffect(() => {
     initAdMob();
     loadSettings();
@@ -175,20 +187,10 @@ const TicTacToeGame = () => {
     setShowPopup(false);
     setGameResult('');
     
-    // 🌀 Set starting player based on turn system
+    // Set starting player based on turn system
     setCurrentPlayer(firstPlayerThisRound);
   };
 
-  // Effect to trigger AI move when AI should start the round
-  useEffect(() => {
-    if (settings.gameMode === 'single-player' && 
-        currentPlayer === 'O' && 
-        gameActive && 
-        board.every(cell => cell === '')) {
-      // AI should make the first move
-      setTimeout(() => makeAIMove(board), 800);
-    }
-  }, [currentPlayer, gameActive, settings.gameMode, board]);
   const resetGame = () => {
     resetBoard();
     setFirstPlayerThisRound('X'); // Reset to X starting first for new games
@@ -292,13 +294,13 @@ const TicTacToeGame = () => {
   };
 
   const endRound = async (message: string, winner: 'X' | 'O' | 'draw') => {
-    // 🌀 TURN SYSTEM - Determine who goes first next round
+    // Determine who goes first next round based on outcome
     if (winner === 'X') {
-      setFirstPlayerThisRound('X'); // Winner goes first
+      setFirstPlayerThisRound('X');
     } else if (winner === 'O') {
-      setFirstPlayerThisRound('O'); // Winner goes first
+      setFirstPlayerThisRound('O');
     } else {
-      // Draw - swap who goes first
+      // Draw - alternate who goes first
       setFirstPlayerThisRound(prev => prev === 'X' ? 'O' : 'X');
     }
     
@@ -352,7 +354,7 @@ const TicTacToeGame = () => {
         // Auto-advance to next round after popup (1.5s for draws, 3s for wins)
         setTimeout(() => {
           setShowPopup(false);
-          resetBoard();
+          resetBoard(); // This will trigger AI move if needed via useEffect
         }, message.includes("draw") ? 1500 : 3000);
       }
 
@@ -376,7 +378,7 @@ const TicTacToeGame = () => {
   const newGame = async () => {
     console.log('Starting new game...');
     
-    // Show interstitial ad when starting a completely new game
+    // Show interstitial ad when starting new game
     try {
       await showInterstitialAd();
     } catch (error) {
@@ -388,7 +390,7 @@ const TicTacToeGame = () => {
     const newRounds = await settingsService.getRounds();
     setRounds(newRounds);
     
-    setFirstPlayerThisRound('X'); // Reset turn system
+    setFirstPlayerThisRound('X'); // Always reset to X for new games
     resetBoard();
     setShowFinalResults(false);
     setShowStartMenu(true);
