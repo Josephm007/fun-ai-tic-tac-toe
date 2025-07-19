@@ -73,10 +73,10 @@ const EnhancedGameCell = ({
         text-2xl sm:text-3xl font-bold 
         rounded-lg border-2 border-gray-300 dark:border-gray-600
         transition-colors duration-300 ease-in-out
-        ${disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'}
+        ${disabled || value !== '' ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'}
         ${isWinning ? 'bg-green-400 border-green-500 text-white animate-pulse' : 
           'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'}
-        ${showPreview ? 'bg-gray-100 dark:bg-gray-700' : ''}
+        ${showPreview && value === '' ? 'bg-gray-100 dark:bg-gray-700' : ''}
       `}
     >
       <motion.span 
@@ -84,7 +84,7 @@ const EnhancedGameCell = ({
           transition-all duration-200
           ${value === 'X' ? 'text-blue-600 dark:text-blue-400' : 
             value === 'O' ? 'text-red-600 dark:text-red-400' : ''}
-          ${showPreview ? 'opacity-50 scale-90' : ''}
+          ${showPreview && value === '' ? 'opacity-50 scale-90' : ''}
         `}
         initial={value && !showPreview ? { scale: 0, opacity: 0 } : {}}
         animate={value && !showPreview ? { scale: 1, opacity: 1 } : {}}

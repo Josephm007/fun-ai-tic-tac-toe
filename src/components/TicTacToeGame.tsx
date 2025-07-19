@@ -216,17 +216,19 @@ const TicTacToeGame = () => {
   };
 
   const handleCellClick = (index: number) => {
+    // Rule: No overwriting allowed - cell must be empty
     if (board[index] !== '' || !gameActive) return;
 
-    // In two-player mode, allow both players to move
+    // Rule: Players alternate turns
     if (settings.gameMode === 'two-player' || currentPlayer === 'X') {
       enhancedSoundService.playTap();
 
+      // Rule: Once a player selects an empty cell, that move is locked in
       const newBoard = [...board];
       newBoard[index] = currentPlayer;
       setBoard(newBoard);
 
-      // Check for win condition first
+      // Rule: Check for 3 in a row (horizontal, vertical, diagonal)
       const winCondition = checkWin(newBoard, currentPlayer);
       if (winCondition) {
         setWinningCondition(winCondition);
@@ -239,7 +241,7 @@ const TicTacToeGame = () => {
         return;
       }
 
-      // Enhanced draw detection using the new isDraw function
+      // Rule: Draw when all 9 cells filled and no 3 in a row
       if (isDraw(newBoard)) {
         setGameActive(false);
         setHasGameOutcome(true);
@@ -248,11 +250,12 @@ const TicTacToeGame = () => {
         return;
       }
 
+      // Rule: Players alternate turns
       const nextPlayer = currentPlayer === 'X' ? 'O' : 'X';
       setCurrentPlayer(nextPlayer);
       enhancedSoundService.playMove();
 
-      // In single-player mode, trigger AI move
+      // Rule: AI plays immediately after human's move when it's its turn
       if (settings.gameMode === 'single-player' && nextPlayer === 'O') {
         setTimeout(() => makeAIMove(newBoard), 800);
       }
@@ -260,16 +263,18 @@ const TicTacToeGame = () => {
   };
 
   const makeAIMove = (currentBoard: Board) => {
+    // Rule: Prevent moves once game is over
     if (!gameActive || settings.gameMode !== 'single-player') return;
 
     const move = getAIMove(currentBoard, settings.aiDifficulty);
     
     if (move !== null) {
+      // Rule: AI must never try to overwrite existing moves
       const newBoard = [...currentBoard];
       newBoard[move] = 'O';
       setBoard(newBoard);
 
-      // Check for AI win
+      // Rule: Check for AI win (3 in a row)
       const winCondition = checkWin(newBoard, 'O');
       if (winCondition) {
         setWinningCondition(winCondition);
@@ -280,7 +285,7 @@ const TicTacToeGame = () => {
         return;
       }
 
-      // Enhanced draw detection for AI moves
+      // Rule: Check for draw after AI move
       if (isDraw(newBoard)) {
         setGameActive(false);
         setHasGameOutcome(true);
@@ -289,6 +294,7 @@ const TicTacToeGame = () => {
         return;
       }
 
+      // Rule: Return turn to human player
       setCurrentPlayer('X');
     }
   };
