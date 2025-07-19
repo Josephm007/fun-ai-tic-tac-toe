@@ -45,6 +45,9 @@ const TicTacToeGame = () => {
   // 🌀 TURN SYSTEM - Track who goes first each round
   const [firstPlayerThisRound, setFirstPlayerThisRound] = useState<'X' | 'O'>('X');
   
+  // 🎯 CONSISTENT TURN ORDER - Track who initiated the series
+  const [seriesInitiator, setSeriesInitiator] = useState<'X' | 'O'>('X');
+  
   // Enhanced game state for best-of-X series
   const [gameState, setGameState] = useState<GameState>({
     totalRounds: 7,
@@ -156,6 +159,10 @@ const TicTacToeGame = () => {
     setSettings(newSettings);
     settingsService.saveSettings(newSettings);
     
+    // 🎯 CONSISTENT TURN ORDER: Set series initiator (always X for new series)
+    setSeriesInitiator('X');
+    setFirstPlayerThisRound('X');
+    
     // Initialize game state for series
     if (matchType === 'best-of-7') {
       setGameState({
@@ -193,7 +200,9 @@ const TicTacToeGame = () => {
 
   const resetGame = () => {
     resetBoard();
-    setFirstPlayerThisRound('X'); // Reset to X starting first for new games
+    // 🎯 CONSISTENT TURN ORDER: Reset series initiator for completely new games
+    setSeriesInitiator('X');
+    setFirstPlayerThisRound('X');
     if (settings.matchType === 'best-of-7') {
       setGameState(prev => ({
         ...prev,
@@ -300,15 +309,9 @@ const TicTacToeGame = () => {
   };
 
   const endRound = async (message: string, winner: 'X' | 'O' | 'draw') => {
-    // Determine who goes first next round based on outcome
-    if (winner === 'X') {
-      setFirstPlayerThisRound('X');
-    } else if (winner === 'O') {
-      setFirstPlayerThisRound('O');
-    } else {
-      // Draw - alternate who goes first
-      setFirstPlayerThisRound(prev => prev === 'X' ? 'O' : 'X');
-    }
+    // 🎯 CONSISTENT TURN ORDER: Same player always goes first regardless of outcome
+    // The series initiator continues to go first in ALL rounds
+    setFirstPlayerThisRound(seriesInitiator);
     
     if (settings.matchType === 'best-of-7') {
       // Update game state stats
@@ -396,7 +399,9 @@ const TicTacToeGame = () => {
     const newRounds = await settingsService.getRounds();
     setRounds(newRounds);
     
-    setFirstPlayerThisRound('X'); // Always reset to X for new games
+    // 🎯 CONSISTENT TURN ORDER: Reset series initiator for new games
+    setSeriesInitiator('X');
+    setFirstPlayerThisRound('X');
     resetBoard();
     setShowFinalResults(false);
     setShowStartMenu(true);
