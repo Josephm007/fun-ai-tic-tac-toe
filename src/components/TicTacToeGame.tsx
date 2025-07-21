@@ -159,7 +159,7 @@ const TicTacToeGame = () => {
     setSettings(newSettings);
     settingsService.saveSettings(newSettings);
     
-    // 🎯 CONSISTENT TURN ORDER: Set series initiator (always X for new series)
+    // 🔄 ALTERNATING TURN ORDER: X always starts Round 1 of new series
     setSeriesInitiator('X');
     setFirstPlayerThisRound('X');
     
@@ -309,9 +309,10 @@ const TicTacToeGame = () => {
   };
 
   const endRound = async (message: string, winner: 'X' | 'O' | 'draw') => {
-    // 🎯 CONSISTENT TURN ORDER: Same player always goes first regardless of outcome
-    // The series initiator continues to go first in ALL rounds
-    setFirstPlayerThisRound(seriesInitiator);
+    // 🔄 ALTERNATING TURN ORDER: Players alternate who goes first each round
+    // Round 1: X, Round 2: O, Round 3: X, Round 4: O, etc.
+    const nextRoundStarter = firstPlayerThisRound === 'X' ? 'O' : 'X';
+    setFirstPlayerThisRound(nextRoundStarter);
     
     if (settings.matchType === 'best-of-7') {
       // Update game state stats
@@ -399,7 +400,7 @@ const TicTacToeGame = () => {
     const newRounds = await settingsService.getRounds();
     setRounds(newRounds);
     
-    // 🎯 CONSISTENT TURN ORDER: Reset series initiator for new games
+    // 🔄 ALTERNATING TURN ORDER: Reset to X for new series
     setSeriesInitiator('X');
     setFirstPlayerThisRound('X');
     resetBoard();
@@ -605,6 +606,9 @@ const TicTacToeGame = () => {
                 </span>
               </div>
             </div>
+                  <div className="text-xs text-blue-500 dark:text-blue-400 font-medium">
+                    {getPlayerName(firstPlayerThisRound)} starts
+                  </div>
           </div>
           </Card>
         </motion.div>
