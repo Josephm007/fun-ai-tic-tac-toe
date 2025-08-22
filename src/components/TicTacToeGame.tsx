@@ -118,14 +118,13 @@ const TicTacToeGame = () => {
 
   // 📢 INTERSTITIAL ADS - Show after every 2 rounds
   useEffect(() => {
-    if (settings.matchType === 'best-of-7' && gameState.currentRound > 1) {
-      const roundIndex = gameState.currentRound - 1; // Convert to 0-based index
-      if (roundIndex % 2 === 0) {
-        console.log(`Showing interstitial ad after round ${roundIndex + 1}`);
-        showInterstitialAd().catch(error => {
-          console.warn('Failed to show interstitial ad (offline mode?):', error);
+    // Load a fresh interstitial ad when game state changes
+    if (gameState.currentRound === 1) {
+      import('@/services/admob').then(({ loadInterstitialAd }) => {
+        loadInterstitialAd().catch(() => {
+          console.log('Ad not available yet - will try again later');
         });
-      }
+      });
     }
   }, [gameState.currentRound, settings.matchType]);
 
@@ -314,6 +313,13 @@ const TicTacToeGame = () => {
     const nextRoundStarter = firstPlayerThisRound === 'X' ? 'O' : 'X';
     setFirstPlayerThisRound(nextRoundStarter);
     
+    // Show interstitial ad after round ends
+    try {
+      await showInterstitialAd();
+    } catch (error) {
+      console.log('Ad not available yet');
+    }
+    
     if (settings.matchType === 'best-of-7') {
       // Update game state stats
       const newStats = { ...gameState.stats };
@@ -387,13 +393,6 @@ const TicTacToeGame = () => {
 
   const newGame = async () => {
     console.log('Starting new game...');
-    
-    // Show interstitial ad when starting new game
-    try {
-      await showInterstitialAd();
-    } catch (error) {
-      console.warn('Failed to show interstitial ad on new game (offline mode?):', error);
-    }
     
     // Reset everything completely
     await settingsService.resetRounds();

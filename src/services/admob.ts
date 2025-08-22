@@ -1,17 +1,11 @@
 import { AdMob, BannerAdSize, BannerAdPosition, InterstitialAdPluginEvents } from '@capacitor-community/admob';
 
-const useTestAds = import.meta.env.VITE_USE_TEST_ADS === "true";
+// Always use test ads for development/testing
+const useTestAds = true;
 
 const bannerAdId = useTestAds
   ? 'ca-app-pub-3940256099942544/6300978111' // ✅ Google Test Banner
   : 'ca-app-pub-6695870861385987/2126913341'; // 🎯 My Real Banner Ad ID
-
-const TEST_INTERSTITIAL_AD_ID = 'ca-app-pub-3940256099942544/1033173712';
-const REAL_INTERSTITIAL_AD_ID = 'ca-app-pub-6695870861385987/8598637138';
-
-export const INTERSTITIAL_AD_ID = useTestAds
-  ? TEST_INTERSTITIAL_AD_ID
-  : REAL_INTERSTITIAL_AD_ID;
 
 const interstitialAdId = useTestAds
   ? 'ca-app-pub-3940256099942544/1033173712' // ✅ Google Test Interstitial
@@ -21,24 +15,24 @@ export async function initAdMob() {
   try {
     await AdMob.initialize({
       initializeForTesting: useTestAds,
-      testingDevices: useTestAds ? ['ABCDEF123456'] : [],
+      testingDevices: ['ABCDEF123456'],
     });
     console.log('AdMob initialized successfully');
-    await preloadAd();
+    await loadInterstitialAd();
   } catch (error) {
     console.error('AdMob initialization failed:', error);
   }
 }
 
-export async function preloadAd() {
+export async function loadInterstitialAd() {
   try {
     await AdMob.prepareInterstitial({
-      adId: INTERSTITIAL_AD_ID,
+      adId: interstitialAdId,
       isTesting: useTestAds,
     });
-    console.log('Interstitial ad preloaded');
+    console.log('Interstitial ad loaded successfully');
   } catch (error) {
-    console.error('Failed to preload interstitial ad:', error);
+    console.error('Failed to load interstitial ad:', error);
   }
 }
 
@@ -61,9 +55,9 @@ export async function showInterstitialAd() {
   try {
     await AdMob.showInterstitial();
     console.log('Interstitial ad shown');
-    // Preload next ad
-    await preloadAd();
+    // Load next ad for future use
+    await loadInterstitialAd();
   } catch (error) {
-    console.error('Failed to show interstitial ad:', error);
+    console.error('Ad not available yet - Failed to show interstitial ad:', error);
   }
 }
