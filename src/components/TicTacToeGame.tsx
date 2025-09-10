@@ -11,7 +11,7 @@ import FinalResults from "./FinalResults";
 import { getAIMove, checkWin, isDraw, hasWinner, isGameOver } from "@/utils/aiLogic";
 import { enhancedSoundService } from "@/services/enhancedSoundService";
 import { settingsService, type GameSettings, type GameStats, type RoundStats } from "@/services/settingsService";
-import { initAdMob, showInterstitialAd } from "@/services/admob";
+import { initAdMob, maybeShowInterstitialAd, showGameplayBanner, hideGameplayBanner } from "@/services/admob";
 
 export type Player = 'X' | 'O' | '';
 export type Board = Player[];
@@ -111,7 +111,7 @@ const TicTacToeGame = () => {
 
   useEffect(() => {
     initAdMob();
-    loadSettings();
+    showGameplayBanner();
     loadStats();
     loadRounds();
   }, []);
@@ -313,9 +313,9 @@ const TicTacToeGame = () => {
     const nextRoundStarter = firstPlayerThisRound === 'X' ? 'O' : 'X';
     setFirstPlayerThisRound(nextRoundStarter);
     
-    // Show interstitial ad after round ends
+    // Show interstitial ad every 2 rounds
     try {
-      await showInterstitialAd();
+      await maybeShowInterstitialAd();
     } catch (error) {
       console.log('Ad not available yet');
     }
